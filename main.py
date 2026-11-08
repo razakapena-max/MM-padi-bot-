@@ -1,9 +1,25 @@
 import os
+import threading
+from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = os.environ.get("9188036525:AAGA0JEXJctf_wa8va5g6JVOlmqHd00QR_Q")
+TOKEN = os.environ.get("TOKEN")
 last_reply = ""
+
+# --- Small website so Render Free no go kill MM ---
+app_web = Flask(__name__)
+
+@app_web.route('/')
+def home():
+    return "MM dey live! 🔥"
+
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app_web.run(host='0.0.0.0', port=port)
+
+threading.Thread(target=run_web, daemon=True).start()
+# --- End website ---
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -43,8 +59,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("MM don hear your voice 🎤 I don understand. Tell me wetin you wan make MM do?")
 
-import asyncio
-async def main():
+if __name__ == "__main__":
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("read", handle_text))
@@ -52,7 +67,4 @@ async def main():
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     print("MM dey run...")
-    await app.run_polling()
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    app.run_polling()
